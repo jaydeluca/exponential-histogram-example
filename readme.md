@@ -18,12 +18,14 @@ using views, leverage the Exponential Histogram functionality for 2 of the metri
 
 ## Run lab
 
-Uses the [grafana/otel-lgtm](https://grafana.com/blog/2024/03/13/an-opentelemetry-backend-in-a-docker-image-introducing-grafana/otel-lgtm/) container 
+Uses the [grafana/otel-lgtm](https://github.com/grafana/docker-otel-lgtm) container 
 to spin up all the observability tools (OTel collector, prometheus, grafana)
 
 `docker compose up -d`
 
 @TODO: containerize app
+
+
 
 Access Grafana:
 
@@ -31,6 +33,37 @@ Access Grafana:
 http://localhost:3000/
 ```
 
+Login with `admin/admin`
+
 Navigate to `Dashboards` -> [`Exponential Histograms`](http://localhost:3000/d/fdj5lsyfzhatcc/exponential-histograms?orgId=1&refresh=5s)
 
 ![dashboard](dashboard.png)
+
+## Notes / Troubleshooting
+
+### Missing Grafana dashboard
+
+The way we are linking the grafana dashboard sourcecode in the docker-compose file relies on the grafana version in the 
+path:
+
+```yaml
+volumes:
+  - ./grafana/dashboards.yaml:/otel-lgtm/grafana-v10.4.1/conf/provisioning/dashboards/dashboards.yaml
+```
+
+You may need to docker exec into the image to see the version is different and update the docker-compose.yml accordingly.
+
+Jump into the container:
+
+`docker exec -it $(docker ps | grep otel-lgtm | awk '{print $1}') bash`
+
+Check id:
+
+`ls -la | grep grafana-v`
+
+Should result in the following, which is what should be used in the path:
+
+`grafana-v10.4.1`
+
+
+@TODO: find a better way to make this not rely on the version in the path
